@@ -23,7 +23,6 @@ class TF_ASSISTANT():
             st.session_state.llmlibrary = LLMLibrary()
             self.credentials, self.project = google.auth.default()
             aiplatform.init(project=self.project, location="us-central1")
-            self.credentials, self.project = google.auth.default()
             st.session_state.init = True
 
     def reset_conversation(self):
