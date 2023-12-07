@@ -47,7 +47,9 @@ This is a Python application that uses Google's Vertex AI and OpenAI to assist u
 
 1. Start the application and navigate to the Streamlit server in your web browser.
 2. In the sidebar, enter the path to your Terraform state file in Google Cloud Storage and click "Submit".
+   1. If you do not have a Terraform state file gs:// path, the application will error out and you'll need to restart the application.
 3. Select a language model for code generation.
+   1. If you do not select a language model, the application will error. If you select a language model and the proper API Key is not set, the application will error.
 4. Enter your question in the chat input field and press enter to generate Terraform code.
 
 ## Modules

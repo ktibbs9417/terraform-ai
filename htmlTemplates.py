@@ -53,7 +53,7 @@ css = '''
 bot_template = '''
 <div class="chat-message bot">
     <div class="avatar">
-        <img src="https://pbs.twimg.com/profile_images/923635388249382912/2ZzC2Ww0_400x400.jpg">
+        <img src="https://www.ometrics.com/blog/wp-content/uploads/2018/10/chatbot_thumb.png">
     </div>
     <div class="message">{{MSG}}</div>
 </div>
