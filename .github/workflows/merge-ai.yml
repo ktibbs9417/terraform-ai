@@ -1,0 +1,46 @@
+name: Google Chat Notification
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+jobs:
+  notification:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10' # Specify the Python version
+
+    - name: Install Python Dependencies
+      run: pip install -r .github/scripts/requirements.txt
+
+    - name: Debug Webhook URL
+      env:
+        GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+      run: echo "Webhook URL is $GOOGLE_CHAT_WEBHOOK"
+
+
+    - name: Run Python Script
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_EVENT_NAME: ${{ github.event_name }}
+        GITHUB_REF: ${{ github.ref }}
+        GITHUB_SHA: ${{ github.sha }}
+        GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+        
+      run: |
+       python .github/scripts/github_details.py | xargs -0 curl -X POST -H 'Content-Type: application/json' $GOOGLE_CHAT_WEBHOOK -d
+
