@@ -48,7 +48,9 @@ def format_pull_request_event(event):
         f"Body Changed From: {body_from}\n"
         f"Pull Request Details: {pr_details}"
     )
-    return formatted_message
+    print(f"Formatted PullRequestEvent Message Type: {type(formatted_message)}")
+
+    return str(formatted_message)
 def format_push_event(event):
     """
     Format a Push event for sending as a message.
@@ -59,20 +61,33 @@ def format_push_event(event):
     Returns:
     str: Formatted message string.
     """
-    ref = event['payload']['ref']
+    # Extracting relevant details from the event
+    event_id = event['id']
+    event_type = event['type']
+    actor = event['actor']['login']
+    repo_name = event['repo']['name']
     commits = event['payload']['commits']
-    commit_details = []
+    is_public = event['public']
+    created_at = event['created_at']
 
-    for commit in commits:
-        commit_message = commit['message']
-        commit_author = commit['author']['name']
-        commit_url = commit['url']
-        commit_details.append(f"Commit by {commit_author}: {commit_message}, URL: {commit_url}")
+    # Formatting commit details
+    commit_messages = [f"{commit['author']['name']}: {commit['message']}" for commit in commits]
 
-    formatted_message = f"PushEvent to {ref} with {len(commits)} commits:\n" + "\n".join(commit_details)
+    # Creating the formatted message
+    formatted_message = (
+        f"GitHub PushEvent:\n"
+        f"ID: {event_id}\n"
+        f"Type: {event_type}\n"
+        f"Actor: {actor}\n"
+        f"Repository: {repo_name}\n"
+        f"Commits:\n" + "\n".join(commit_messages) + "\n"
+        f"Public: {is_public}\n"
+        f"Created at: {created_at}"
+    )
+    print(f"Formatted PushEvent Message Type: {type(formatted_message)}")
     return formatted_message
 
-def process_github_events(events, event_type):
+def process_github_events(event, event_type):
     """
     Process GitHub events, filtering and formatting messages based on event type.
 
@@ -83,15 +98,13 @@ def process_github_events(events, event_type):
     Returns:
     list: List of formatted message strings.
     """
-    messages = []
-    for event in events:
-        if event['type'] == 'PullRequestEvent' and event_type == 'PullRequestEvent':
-            message = format_pull_request_event(event)
-            messages.append(message)
-        elif event['type'] == 'PushEvent' and event_type == 'PushEvent':
-            message = format_push_event(event)
-            messages.append(message)
-    return messages
+    if event_type == 'PushEvent':
+        return format_push_event(event)
+    elif event_type == 'PullRequestEvent':
+        return format_pull_request_event(event)
+    # Add other event types if needed
+    else:
+        return "Unsupported event type"
 
 def get_github_events(event_type):
     """
@@ -112,10 +125,11 @@ def get_github_events(event_type):
     }
     try:
         response = requests.get(api_url, headers=headers)
+        #print(f"GitHub API Response: {response.status_code}, {response.text}")  # Log the raw response
         if response.status_code == 200:
             events = response.json()
             if events and events[0]['type'] == event_type:
-                return [events[0]]
+                return events[0]
             return []
         else:
             print(f"Error: Unable to fetch data (Status code: {response.status_code})")
@@ -128,13 +142,11 @@ if __name__ == "__main__":
     google_chat_webhook_url = os.getenv('GOOGLE_CHAT_WEBHOOK')
     event_type = os.getenv('GITHUB_EVENT_TYPE')  # Event type from environment variable
 
-    events_messages = get_github_events(event_type)
-    if events_messages:
-        # Check if all elements in events_messages are strings
-        if all(isinstance(message, str) for message in events_messages):
-            message = f"GitHub {event_type}:\n" + "\n".join(events_messages)
-            send_to_google_chat(google_chat_webhook_url, message)
-        else:
-            print("Error: Non-string elements found in events_messages")
+    print(f"Event Type: {event_type}")
+    event = get_github_events(event_type)
+    if event and event['type'] == 'PushEvent':
+        print("Processing PushEvent")
+        message = format_push_event(event)
+        send_to_google_chat(google_chat_webhook_url, message)
     else:
-        print(f"No events found for {event_type}")
+            print("Error: Non-string elements found in events_messages")
