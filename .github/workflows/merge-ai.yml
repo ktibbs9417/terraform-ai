@@ -38,5 +38,5 @@ jobs:
         GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
         
       run: |
-       python .github/scripts/github_details.py | xargs -0 curl -X POST -H 'Content-Type: application/json' $GOOGLE_CHAT_WEBHOOK -d
+       python .github/scripts/github_details.py
 
