@@ -36,14 +36,19 @@ def format_pull_request_event(event):
     str: Formatted message string.
     """
     action = event['payload']['action']
-    pr_number = event['payload']['number']
-    changes = event.get('payload', {}).get('changes', {})
-    title_from = changes.get('title', {}).get('from', 'N/A')
-    body_from = changes.get('body', {}).get('from', 'N/A')
+    pr_number = event['payload']['pull_request']['number']
+    pr_changes = event['payload'].get('changes', {})
+    title_from = pr_changes.get('title', {}).get('from', 'N/A')
+    body_from = pr_changes.get('body', {}).get('from', 'N/A')
     pr_details = json.dumps(event['payload']['pull_request'], indent=4)
-    reason = event['payload'].get('reason', 'N/A')
-    return f"Pull Request Event:\nAction: {action}, Number: {pr_number}\nChanges: Title from {title_from}, Body from {body_from}\nPull Request Details:\n{pr_details}\nReason: {reason}"
 
+    formatted_message = (
+        f"PullRequestEvent Action: {action}, Number: {pr_number}\n"
+        f"Title Changed From: {title_from}\n"
+        f"Body Changed From: {body_from}\n"
+        f"Pull Request Details: {pr_details}"
+    )
+    return formatted_message
 def format_push_event(event):
     """
     Format a Push event for sending as a message.
@@ -55,15 +60,17 @@ def format_push_event(event):
     str: Formatted message string.
     """
     ref = event['payload']['ref']
-    num_commits = len(event['payload']['commits'])
-    commits_details = []
-    for commit in event['payload']['commits']:
+    commits = event['payload']['commits']
+    commit_details = []
+
+    for commit in commits:
         commit_message = commit['message']
         commit_author = commit['author']['name']
         commit_url = commit['url']
-        commits_details.append(f"Message: {commit_message}, Author: {commit_author}, URL: {commit_url}")
-    commits_info = "\n".join(commits_details)
-    return f"Push Event to {ref}, Total Commits: {num_commits}\nCommits Details:\n{commits_info}"
+        commit_details.append(f"Commit by {commit_author}: {commit_message}, URL: {commit_url}")
+
+    formatted_message = f"PushEvent to {ref} with {len(commits)} commits:\n" + "\n".join(commit_details)
+    return formatted_message
 
 def process_github_events(events, event_type):
     """
@@ -79,9 +86,13 @@ def process_github_events(events, event_type):
     messages = []
     for event in events:
         if event['type'] == 'PullRequestEvent' and event_type == 'PullRequestEvent':
-            messages.append(format_pull_request_event(event))
+            message = format_pull_request_event(event)
+            if message:  # Ensure message is not empty or None
+                messages.append(message)
         elif event['type'] == 'PushEvent' and event_type == 'PushEvent':
-            messages.append(format_push_event(event))
+            message = format_push_event(event)
+            if message:  # Ensure message is not empty or None
+                messages.append(message)
     return messages
 
 def get_github_events(event_type):
