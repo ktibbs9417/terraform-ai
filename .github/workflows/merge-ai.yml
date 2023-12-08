@@ -36,5 +36,8 @@ jobs:
     - name: Run Python Script
       run: python .github/scripts/github_details.py
       env:
-        GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
+        GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
         GITHUB_EVENT_TYPE: ${{ env.GITHUB_EVENT_TYPE }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
