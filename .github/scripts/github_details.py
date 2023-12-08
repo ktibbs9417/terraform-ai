@@ -1,34 +1,36 @@
 import requests
 import os
-import json
 
-def fetch_push_events(repo, token):
-    url = f"https://api.github.com/repos/{repo}/events"
-    headers = {'Authorization': f'token {token}'}
-    response = requests.get(url, headers=headers)
+def get_github_events(event_type):
+    # Set up the variables
+    github_repository = os.getenv('GITHUB_REPOSITORY')
+    github_token = os.getenv('GITHUB_TOKEN')
+
+    # Define the API endpoint
+    api_url = f"https://api.github.com/repos/{github_repository}/events"
+
+    # Set up headers for authentication
+    headers = {
+        'Authorization': f'token {github_token}',
+        'Accept': 'application/vnd.github.v3+json'
+    }
+
+    # Make the request
+    response = requests.get(api_url, headers=headers)
+
+    # Check for successful response
     if response.status_code == 200:
         events = response.json()
-        push_events = [event for event in events if event['type'] == 'PushEvent']
-        return push_events
+        # Filter for specific event type (push or pull_request)
+        filtered_events = [event for event in events if event['type'] == event_type]
+        return filtered_events
     else:
+        print(f"Error: Unable to fetch data (Status code: {response.status_code})")
         return None
 
 # Example usage
-repo = os.getenv('GITHUB_REPOSITORY') # Replace with your repository
-token = os.getenv("GITHUB_TOKEN")   # Replace with your GitHub token
+push_events = get_github_events('PushEvent')
+pull_events = get_github_events('PullRequestEvent')
 
-push_events = fetch_push_events(repo, token)
-print(push_events)
-
-def fetch_pull_requests(repo, token):
-    url = f"https://api.github.com/repos/{repo}/pulls"
-    headers = {'Authorization': f'token {token}'}
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return None
-
-# Example usage
-pull_requests = fetch_pull_requests(repo, token)
-print(pull_requests)
+print("Push Events:", push_events)
+print("Pull Events:", pull_events)
