@@ -17,8 +17,6 @@ def fetch_push_events(repo, token):
 repo = os.getenv('GITHUB_REPOSITORY') # Replace with your repository
 token = os.getenv("GITHUB_TOKEN")   # Replace with your GitHub token
 
-print(f"Repo: {repo}")
-
 push_events = fetch_push_events(repo, token)
 print(push_events)
 
