@@ -128,10 +128,13 @@ if __name__ == "__main__":
     google_chat_webhook_url = os.getenv('GOOGLE_CHAT_WEBHOOK')
     event_type = os.getenv('GITHUB_EVENT_TYPE')  # Event type from environment variable
 
-    # Check if the event type is either 'PushEvent' or 'PullRequestEvent'
     events_messages = get_github_events(event_type)
-    if events_messages:  # Check if there are messages to send
-        message = f"GitHub {event_type}:\n" + "\n".join(events_messages)
-        send_to_google_chat(google_chat_webhook_url, message)
+    if events_messages:
+        # Check if all elements in events_messages are strings
+        if all(isinstance(message, str) for message in events_messages):
+            message = f"GitHub {event_type}:\n" + "\n".join(events_messages)
+            send_to_google_chat(google_chat_webhook_url, message)
+        else:
+            print("Error: Non-string elements found in events_messages")
     else:
         print(f"No events found for {event_type}")
