@@ -2,4 +2,6 @@
 tf_state.json
 __pycache__/
 fais_db/
-```
+.secrets
+
+
