@@ -39,6 +39,7 @@ class TF_ASSISTANT():
         if "conversation" not in st.session_state or st.session_state["conversation"] is None:
             st.session_state.conversation = st.session_state.llmlibrary.ask()
         response = st.session_state.conversation({'question': question})
+        print(f"Response: {response}")
         st.session_state.chat_history = response['chat_history']
         #print(f"Chat History:\n {st.session_state.chat_history}\n")
         #print(f"Conversation:\n {st.session_state.conversation}\n")

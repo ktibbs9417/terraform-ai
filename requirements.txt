@@ -22,3 +22,4 @@ cohere
 tfds-nightly
 tensorflow_hub==0.13.0
 jq
+openai

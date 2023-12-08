@@ -1,15 +1,14 @@
 css = '''
 <style>
+* {
+    box-sizing: border-box;
+}
 .chat-message {
-    padding: 1rem; 
-    border-radius: 0.5rem;
+    padding: 1rem;
     margin-bottom: 1rem;
     display: flex;
-    align-items: flex-start; /* Align to the start for variable content size */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    max-width: 80%;
-    min-height: 100px; /* Ensure a minimum height for small messages */
-    overflow: hidden; /* Hide overflow */
+    align-items: flex-start;
+    max-width: 100%;
 }
 .chat-message.user {
     background-color: #2b313e;
@@ -31,13 +30,15 @@ css = '''
     object-fit: cover;
 }
 .chat-message .message {
-    flex: 1;
     padding: 0.5rem 1rem;
     color: #fff;
     display: flex;
     flex-direction: column;
-    overflow-wrap: break-word; /* New property for word wrapping */
-    word-break: break-word; /* Fallback property for word breaking */
+    overflow-wrap: break-word;
+    word-break: break-word;
+    flex: 1;
+    min-width: 0; /* Added to ensure flex items can shrink below content size */
+    white-space: pre-wrap; /* Ensures that text wraps a
 }
 .chat-message.user .message {
     text-align: left;
