@@ -5,6 +5,8 @@ def get_github_events(event_type):
     # Set up the variables
     github_repository = os.getenv('GITHUB_REPOSITORY')
     github_token = os.getenv('GITHUB_TOKEN')
+    print (f"Github repository: {github_repository}")
+    print (f"Github token: {github_token}")
 
     # Define the API endpoint
     api_url = f"https://api.github.com/repos/{github_repository}/events"

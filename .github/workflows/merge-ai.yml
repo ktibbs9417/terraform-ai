@@ -34,7 +34,7 @@ jobs:
 
     - name: Run Python Script
       env:
-        GITHUB_TOKEN: ${{ secrets.SECRET_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         GITHUB_EVENT_NAME: ${{ github.event_name }}
         GITHUB_REF: ${{ github.ref }}
