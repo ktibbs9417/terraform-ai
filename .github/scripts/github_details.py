@@ -6,15 +6,14 @@ def get_github_events(event_type):
     github_repository = os.getenv('GITHUB_REPOSITORY')
     github_token = os.getenv('GITHUB_TOKEN')
     print (f"Github repository: {github_repository}")
-    print (f"Github token: {github_token}")
 
     # Define the API endpoint
     api_url = f"https://api.github.com/repos/{github_repository}/events"
 
     # Set up headers for authentication
     headers = {
-        'Authorization': f'token {github_token}',
-        'Accept': 'application/vnd.github.v3+json'
+        'Accept': 'application/vnd.github+json',
+        'Authorization': f'Bearer {github_token}',
     }
 
     # Print debug information
