@@ -12,7 +12,7 @@ def fetch_push_events(repo, token):
         return None
 
 # Example usage
-repo = os.getenv("GITHUB_REPOSITORY")  # Replace with your repository
+repo = "ktibbs/terraform-ai" # Replace with your repository
 token = os.getenv("GITHUB_TOKEN")   # Replace with your GitHub token
 print(f"Repo: {repo}\n")
 push_events = fetch_push_events(repo, token)
