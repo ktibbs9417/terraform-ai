@@ -1,5 +1,6 @@
 import requests
 import os
+
 def fetch_push_events(repo, token):
     url = f"https://api.github.com/repos/{repo}/events"
     headers = {'Authorization': f'token {token}'}
@@ -14,7 +15,9 @@ def fetch_push_events(repo, token):
 # Example usage
 repo = "ktibbs/terraform-ai" # Replace with your repository
 token = os.getenv("GITHUB_TOKEN")   # Replace with your GitHub token
-print(f"Repo: {repo}\n")
+
+print(f"Repo: {repo}")
+
 push_events = fetch_push_events(repo, token)
 print(push_events)
 
