@@ -26,17 +26,15 @@ jobs:
     - name: Install Python Dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r .github/scripts/requirements.txt
+        # Add other dependency installation commands here if needed
+
+    # New step to set GITHUB_EVENT_TYPE
+    - name: Set Event Type
+      run: |
+        echo "GITHUB_EVENT_TYPE=${{ github.event_name == 'push' && 'PushEvent' || github.event_name == 'pull_request' && 'PullRequestEvent' }}" >> $GITHUB_ENV
 
     - name: Run Python Script
+      run: python your_script.py
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        GITHUB_EVENT_NAME: ${{ github.event_name }}
-        GITHUB_REF: ${{ github.ref }}
-        GITHUB_SHA: ${{ github.sha }}
-        GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
-        
-      run: |
-       python .github/scripts/github_details.py
-
+        GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
+        GITHUB_EVENT_TYPE: ${{ env.GITHUB_EVENT_TYPE }}
