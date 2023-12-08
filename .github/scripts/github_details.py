@@ -105,7 +105,9 @@ def get_github_events(event_type):
         response = requests.get(api_url, headers=headers)
         if response.status_code == 200:
             events = response.json()
-            return process_github_events(events, event_type)
+            if events and events[0]['type'] == event_type:
+                return [events[0]]
+            return []
         else:
             print(f"Error: Unable to fetch data (Status code: {response.status_code})")
             return []
