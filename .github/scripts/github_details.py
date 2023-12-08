@@ -1,10 +1,11 @@
 import requests
 import os
-
+import json
 def get_github_events(event_type):
     # Set up the variables
     github_repository = os.getenv('GITHUB_REPOSITORY')
     github_token = os.getenv('GITHUB_TOKEN')
+    data = {"name": "{}".format(github_repository)}
     print (f"Github repository: {github_repository}")
 
     # Define the API endpoint
@@ -22,7 +23,7 @@ def get_github_events(event_type):
 
     try:
         # Make the request
-        response = requests.get(api_url, headers=headers)
+        response = requests.get(api_url, data=json.dumps(data), headers=headers)
 
         # Print raw response for debugging
         print("Raw Response:", response.text)
