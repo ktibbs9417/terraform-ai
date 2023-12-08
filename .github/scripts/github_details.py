@@ -13,7 +13,7 @@ def get_github_events(event_type):
     # Set up headers for authentication
     headers = {
         'Accept': 'application/vnd.github+json',
-        'Authorization': f'Bearer {github_token}',
+        'Authorization': 'token {}'.format(github_token)
     }
 
     # Print debug information
