@@ -87,12 +87,10 @@ def process_github_events(events, event_type):
     for event in events:
         if event['type'] == 'PullRequestEvent' and event_type == 'PullRequestEvent':
             message = format_pull_request_event(event)
-            if message:  # Ensure message is not empty or None
-                messages.append(message)
+            messages.append(message)
         elif event['type'] == 'PushEvent' and event_type == 'PushEvent':
             message = format_push_event(event)
-            if message:  # Ensure message is not empty or None
-                messages.append(message)
+            messages.append(message)
     return messages
 
 def get_github_events(event_type):
@@ -131,14 +129,9 @@ if __name__ == "__main__":
     event_type = os.getenv('GITHUB_EVENT_TYPE')  # Event type from environment variable
 
     # Check if the event type is either 'PushEvent' or 'PullRequestEvent'
-    if event_type in ['PushEvent', 'PullRequestEvent']:
-        events_messages = get_github_events(event_type)
-
-        # Only send a message if there are events to report
-        if events_messages:
-            message = f"GitHub {event_type}:\n" + "\n".join(events_messages)
-            send_to_google_chat(google_chat_webhook_url, message)
-        else:
-            print(f"No events found for {event_type}")
+    events_messages = get_github_events(event_type)
+    if events_messages:  # Check if there are messages to send
+        message = f"GitHub {event_type}:\n" + "\n".join(events_messages)
+        send_to_google_chat(google_chat_webhook_url, message)
     else:
-        print(f"Invalid or unspecified event type: {event_type}")
+        print(f"No events found for {event_type}")
