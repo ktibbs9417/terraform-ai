@@ -114,7 +114,7 @@ def get_github_events(event_type):
         return []
 
 if __name__ == "__main__":
-    google_chat_webhook_url = os.getenv('GOOGLE_CHAT_WEBHOOK_URL')
+    google_chat_webhook_url = os.getenv('GOOGLE_CHAT_WEBHOOK')
     event_type = os.getenv('GITHUB_EVENT_TYPE')  # Event type from environment variable
 
     # Check if the event type is either 'PushEvent' or 'PullRequestEvent'
