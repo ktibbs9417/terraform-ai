@@ -22,7 +22,6 @@ class LLMLibrary:
         BASEDIR = os.path.abspath(os.path.dirname("main.py"))
         load_dotenv(os.path.join(BASEDIR, '.env'))
         choere_api_key = os.getenv("COHERE_API_KEY")
-        self.atlas_api_key = os.getenv("ATLAS_API_KEY")
         self.embedding_function = CohereEmbeddings(model="embed-multilingual-v2.0", cohere_api_key=choere_api_key)
         self.vectorstore = VectorStore()
         os.environ["OPENAI_API_TYPE"] = os.getenv("OPENAI_API_TYPE")

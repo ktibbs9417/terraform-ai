@@ -4,12 +4,10 @@ pyhcl
 google-generativeai
 google-cloud-aiplatform
 python-dotenv
-google-generativeai
 google-search-results
 duckduckgo-search
 google-auth
 pypdf
-google-cloud-storage
 unstructured
 google-cloud-documentai
 google-cloud-documentai-toolbox

@@ -2,8 +2,59 @@
 import requests
 import os
 import json
+from langchain.prompts import (
+    SystemMessagePromptTemplate,
+    HumanMessagePromptTemplate,
+)
+from langchain.llms import GooglePalm
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 
-def send_to_google_chat(webhook_url, message):
+        
+
+def get_llm():
+        return GooglePalm(temperature=0.0)
+
+    
+def ask(message):
+
+        llm = get_llm()
+        #print(f"LLM: {llm}\n")  
+        system_template = '''
+        You are a helpful assistant that is a Git Expert. Your goal is to provide detailed descriptions over PushEvents and PullRequestEvents that are triggered on GitHub.
+        Do not say "Sure", "Certainly" or "Yes" as this will confuse the user.
+        '''
+        messages = [
+            SystemMessagePromptTemplate.from_template(system_template),
+            HumanMessagePromptTemplate.from_template("{message}"),
+        ]
+        #prompt = ChatPromptTemplate.from_messages(messages)
+        template = '''
+        You are a helpful assistant that is a Git Expert. Your goal is to provide detailed descriptions over PushEvents and PullRequestEvents that are triggered on GitHub.
+        Provide a natural language response to the following GitHub Action that was taken place.
+        Include details about the commit ID, the type of event, the actor, the repository name, commit messages, the date, and a link to the commit branch:
+
+        GitHub Action: {message}
+        '''
+        prompt = PromptTemplate(
+                input_variables=["message"],
+                template=template,
+        )
+        formatted = prompt.format(message=message)
+        print (f"Formatted message: {formatted}")
+        print(f"Generating a natural language reponse to the GitHub Action\n")
+        chain = LLMChain(
+             llm = llm, 
+             prompt = prompt
+             )
+        response = chain.run(message)
+        # runnable = prompt | llm | StrOutputParser()
+        # for chunk in runnable.stream({"message": "{message}"}):
+        #     print(chunk, end="", flush=True)
+        #print(f"Conversation chain: {conversation_chain}\n")
+        return response
+
+def send_to_google_chat(webhook_url, ai_message):
     """
     Send a message to a Google Chat room using a webhook.
 
@@ -17,7 +68,7 @@ def send_to_google_chat(webhook_url, message):
     headers = {
         'Content-Type': 'application/json; charset=UTF-8'
     }
-    data = {'text': message}
+    data = {'text': ai_message}
     try:
         response = requests.post(webhook_url, data=json.dumps(data), headers=headers)
         if response.status_code != 200:
@@ -68,10 +119,10 @@ def format_push_event(event):
     repo_name = event['repo']['name']
     commits = event['payload']['commits']
     is_public = event['public']
-    created_at = event['created_at']
+    created_at = event['created_at']	
 
     # Formatting commit details
-    commit_messages = [f"{commit['author']['name']}: {commit['message']}" for commit in commits]
+    commit_messages = [f"{commit['author']['name']}: {commit['message']}: {commit['url']}" for commit in commits]
 
     # Creating the formatted message
     formatted_message = (
@@ -142,11 +193,15 @@ if __name__ == "__main__":
     google_chat_webhook_url = os.getenv('GOOGLE_CHAT_WEBHOOK')
     event_type = os.getenv('GITHUB_EVENT_TYPE')  # Event type from environment variable
 
+    
     print(f"Event Type: {event_type}")
     event = get_github_events(event_type)
     if event and event['type'] == 'PushEvent':
         print("Processing PushEvent")
         message = format_push_event(event)
-        send_to_google_chat(google_chat_webhook_url, message)
+        #print(f"PushEvent Message: {message}")
+        ai_message = ask(message)
+        #print(f"AI Message: {ai_message}")
+        send_to_google_chat(google_chat_webhook_url, ai_message)
     else:
             print("Error: Non-string elements found in events_messages")
