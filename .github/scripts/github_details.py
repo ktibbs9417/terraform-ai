@@ -20,7 +20,7 @@ def pushevent_ask(message, event_type):
         Provide a natural language response to the following GitHub Action that was taken place.
         Include details about the commit ID, the type of event, the actor, the repository name, commit messages, the date, and a link to the commit branch:
 
-        Provide a summary to the following. Be sure to supply a URL to the push event: {message}
+        Provide a summary to the following. Be sure to supply the commit URL to the push event: {message}
         '''
         print(f"Generating a natural language reponse to the GitHub Action\n")
         chain = LLMChain(
