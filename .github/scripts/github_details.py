@@ -47,7 +47,8 @@ def ask(message):
              llm = llm, 
              prompt = prompt
              )
-        response = chain.run(message)
+        response = chain.run(formatted)
+        print(f"Natural language response: {response}\n")
         # runnable = prompt | llm | StrOutputParser()
         # for chunk in runnable.stream({"message": "{message}"}):
         #     print(chunk, end="", flush=True)
