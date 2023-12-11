@@ -20,7 +20,7 @@ def pushevent_ask(message, event_type):
         Provide a natural language response to the following GitHub Action that was taken place.
         Include details about the commit ID, the type of event, the actor, the repository name, commit messages, the date, and a link to the commit branch:
 
-        GitHub Action: {message}
+        Provide a summary to the following. Be sure to supply a URL to the push event: {message}
         '''
         print(f"Generating a natural language reponse to the GitHub Action\n")
         chain = LLMChain(
@@ -41,7 +41,7 @@ def pullrequestevent_ask(message, commit, event_type):
         You are a helpful assistant that is a Git Expert. Your goal is to provide detailed descriptions over PullRequestEvents that are triggered on GitHub.
         Include the URL to the pull request. If there are assignees or reviewers, include them in bullet points.
 
-        GitHub Action: {message}
+        Provide a summary to the following. Be sure to supply a URL to the pull request: {message}
         '''
         event_prompt = PromptTemplate(
                 input_variables=["message", "commit"],
