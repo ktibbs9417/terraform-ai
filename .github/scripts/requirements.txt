@@ -1,3 +1,4 @@
 requests
 langchain==0.0.346
 google-cloud-aiplatform
+google-generativeai
