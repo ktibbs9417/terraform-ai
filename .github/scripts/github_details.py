@@ -46,7 +46,7 @@ def ask(message, event_type):
              llm = llm, 
              prompt = prompt
              )
-        response = chain.run(message)
+        response = chain.run(formatted)
         print(f"Natural language response: {response}\n")
         # runnable = prompt | llm | StrOutputParser()
         # for chunk in runnable.stream({"message": "{message}"}):
@@ -87,21 +87,43 @@ def format_pull_request_event(event):
     str: Formatted message string.
     """
     action = event['payload']['action']
-    pr_number = event['payload']['pull_request']['number']
-    pr_changes = event['payload'].get('changes', {})
-    title_from = pr_changes.get('title', {}).get('from')
-    body_from = pr_changes.get('body', {}).get('from')
-    pr_details = json.dumps(event['payload']['pull_request'], indent=4)
+    pr = event['payload']['pull_request']
+    html_url = pr['html_url']
+    title = pr['title']
+    user_login = pr['user']['login']
+    body = pr['body'] or "No body content"
+    created_at = pr['created_at']
+    assignee = pr['assignee']['login'] if pr['assignee'] else "No assignee"
+    assignees = ", ".join([assignee['login'] for assignee in pr['assignees']])
+    requested_reviewers = ", ".join([reviewer['login'] for reviewer in pr['requested_reviewers']])
+    requested_teams = ", ".join([team['name'] for team in pr['requested_teams']])
+    labels = ", ".join([label['name'] for label in pr['labels']])
+    branch = pr['head']['label']
+    mergeable = pr['mergeable']
+    mergeable_state = pr['mergeable_state']
+    additions = pr['additions']
+    deletions = pr['deletions']
+    changed_files = pr['changed_files']
 
     formatted_message = (
-        f"PullRequestEvent Action: {action}, Number: {pr_number}\n"
-        f"Title Changed From: {title_from}\n"
-        f"Body Changed From: {body_from}\n"
-        f"Pull Request Details: {pr_details}"
+        f"Pull Request Event - {action}\n"
+        f"URL: {html_url}\n"
+        f"Title: {title}\n"
+        f"Initiated by: {user_login}\n"
+        f"Body: {body}\n"
+        f"Created at: {created_at}\n"
+        f"Assignee: {assignee}\n"
+        f"Assignees: {assignees}\n"
+        f"Requested Reviewers: {requested_reviewers}\n"
+        f"Requested Teams: {requested_teams}\n"
+        f"Labels: {labels}\n"
+        f"From Branch: {branch}\n"
+        f"Mergeable: {mergeable}\n"
+        f"Mergeable State: {mergeable_state}\n"
+        f"Additions: {additions}, Deletions: {deletions}, Changed Files: {changed_files}"
     )
-    #print(f"Formatted PullRequestEvent Message Type: {type(formatted_message)}")
 
-    return str(formatted_message)
+    return formatted_message
 def format_push_event(event):
     """
     Format a Push event for sending as a message.
