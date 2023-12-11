@@ -2,10 +2,6 @@
 import requests
 import os
 import json
-from langchain.prompts import (
-    SystemMessagePromptTemplate,
-    HumanMessagePromptTemplate,
-)
 from langchain.llms import GooglePalm
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
@@ -15,44 +11,66 @@ from langchain.chains import LLMChain
 def get_llm():
         return GooglePalm(temperature=0.0)
 
-    
-def ask(message, event_type):
+def pushevent_ask(message, event_type):
 
         llm = get_llm()
-        if event_type == 'PushEvent':
-            template = '''
-            You are a helpful assistant that is a Git Expert. Your goal is to provide detailed descriptions over PushEvents and PullRequestEvents that are triggered on GitHub.
-            Provide a natural language response to the following GitHub Action that was taken place.
-            Include details about the commit ID, the type of event, the actor, the repository name, commit messages, the date, and a link to the commit branch:
+        print (f"Generating a natural language reponse to the GitHub Action: {event_type}\n")
+        template = '''
+        You are a helpful assistant that is a Git Expert. Your goal is to provide detailed descriptions over PushEvents that are triggered on GitHub.
+        Provide a natural language response to the following GitHub Action that was taken place.
+        Include details about the commit ID, the type of event, the actor, the repository name, commit messages, the date, and a link to the commit branch:
 
-            GitHub Action: {message}
-            '''
-        elif event_type == 'PullRequestEvent':
-            template = '''
-            You are a helpful assistant that is a Git Expert. Your goal is to provide detailed descriptions over PushEvents and PullRequestEvents that are triggered on GitHub.
-            Provide a natural language response to the following GitHub Action that was taken place.
-            Include details about the Pull Request Action, the Pull Request Number, the Title Changed From, the Body Changed From, and the Pull Request Details:
-
-            GitHub Action: {message}
-            '''
-        prompt = PromptTemplate(
-                input_variables=["message"],
-                template=template,
-        )
-        formatted = prompt.format(message=message)
-        #print (f"Formatted message: {formatted}")
+        GitHub Action: {message}
+        '''
         print(f"Generating a natural language reponse to the GitHub Action\n")
         chain = LLMChain(
              llm = llm, 
-             prompt = prompt
+             prompt = PromptTemplate(
+                 input_variables=["message"],
+                 template =template,
+                 ),
              )
-        response = chain.run(formatted)
+        response = chain.run({"message": message})
         print(f"Natural language response: {response}\n")
-        # runnable = prompt | llm | StrOutputParser()
-        # for chunk in runnable.stream({"message": "{message}"}):
-        #     print(chunk, end="", flush=True)
-        #print(f"Conversation chain: {conversation_chain}\n")
         return response
+    
+def pullrequestevent_ask(message, commit, event_type):
+
+        llm = get_llm()
+        event_template = '''
+        You are a helpful assistant that is a Git Expert. Your goal is to provide detailed descriptions over PullRequestEvents that are triggered on GitHub.
+        Include the URL to the pull request. If there are assignees or reviewers, include them in bullet points.
+
+        GitHub Action: {message}
+        '''
+        event_prompt = PromptTemplate(
+                input_variables=["message", "commit"],
+                template =event_template,
+        )
+        commit_template = '''
+        You are a a helpful assistant that understands Infrastructure as Code, Python, JSON, JavaScript, and YAML. Your goal is to provide detailed descriptions over the follwing Merge Request Patch snippets of code.
+
+        Explain what changes were made in the following code snippet: {commit}
+        '''
+        commit_prompt = PromptTemplate(
+                input_variables=["commit"],
+                template =commit_template,
+        )
+        print(f"Generating a natural language reponse to the GitHub Action\n")
+        event_chain = LLMChain(
+             llm = llm, 
+             prompt = event_prompt
+             )
+        commit_chain = LLMChain(
+                llm = llm, 
+                prompt = commit_prompt
+                )
+        event_response = event_chain.run({"message": message})
+        commit_response = commit_chain.run({"commit": commit})
+        print(f"Natural language response: {event_response}\n")
+        print(f"Natural language response: {commit_response}\n")
+        ai_response = event_response + 'n' +  commit_response
+        return ai_response
 
 def send_to_google_chat(webhook_url, ai_message):
     """
@@ -89,6 +107,7 @@ def format_pull_request_event(event):
     action = event['payload']['action']
     pr = event['payload']['pull_request']
     html_url = pr['html_url']
+    patch_url = pr['patch_url']
     title = pr['title']
     user_login = pr['user']['login']
     body = pr['body'] or "No body content"
@@ -108,6 +127,7 @@ def format_pull_request_event(event):
     formatted_message = (
         f"Pull Request Event - {action}\n"
         f"URL: {html_url}\n"
+        f"Patch URL: {patch_url}\n"
         f"Title: {title}\n"
         f"Initiated by: {user_login}\n"
         f"Body: {body}\n"
@@ -122,8 +142,20 @@ def format_pull_request_event(event):
         f"Mergeable State: {mergeable_state}\n"
         f"Additions: {additions}, Deletions: {deletions}, Changed Files: {changed_files}"
     )
+    try:
+        response = requests.get(patch_url, allow_redirects=True)
+        if response.status_code != 200:
+            commit = "No commit found"
+            print(f"Error getting patch commit from merge request: {response.status_code})")
+        elif response.status_code == 200:
+            commit = response.content
+            print(f"Successfully retrieved patch commit from merge request: {response.status_code})")
+    except Exception as e:
+        commit = "No commit found"
+        print(f"An error occurred while getting the Commit: {e}")
+    
+    return formatted_message, commit
 
-    return formatted_message
 def format_push_event(event):
     """
     Format a Push event for sending as a message.
@@ -157,7 +189,7 @@ def format_push_event(event):
         f"Public: {is_public}\n"
         f"Created at: {created_at}"
     )
-    print(f"Formatted PushEvent Message Type: {type(formatted_message)}")
+    #print(f"Formatted PushEvent Message Type: {type(formatted_message)}")
     return formatted_message
 
 def process_github_events(event, event_type):
@@ -222,13 +254,13 @@ if __name__ == "__main__":
         print("Processing PushEvent")
         message = format_push_event(event)
         #print(f"PushEvent Message: {message}")
-        ai_message = ask(message, event_type)
+        ai_message = pushevent_ask(message, event_type)
         #print(f"AI Message: {ai_message}")
         send_to_google_chat(google_chat_webhook_url, ai_message)
     elif event and event['type'] == 'PullRequestEvent':
         print("Processing PullRequestEvent")
-        message = format_pull_request_event(event)
-        ai_message = ask(message, event_type)
+        message, commit = format_pull_request_event(event)
+        ai_message = pullrequestevent_ask(message, commit, event_type)
         send_to_google_chat(google_chat_webhook_url, ai_message)
     else:
             print("Error: Non-string elements found in events_messages")
