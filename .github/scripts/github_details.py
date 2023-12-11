@@ -203,5 +203,10 @@ if __name__ == "__main__":
         ai_message = ask(message)
         #print(f"AI Message: {ai_message}")
         send_to_google_chat(google_chat_webhook_url, ai_message)
+    elif event and event['type'] == 'PullRequestEvent':
+        print("Processing PullRequestEvent")
+        message = format_pull_request_event(event)
+        ai_message = ask(message)
+        send_to_google_chat(google_chat_webhook_url, ai_message)
     else:
             print("Error: Non-string elements found in events_messages")
