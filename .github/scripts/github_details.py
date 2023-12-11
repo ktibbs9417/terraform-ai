@@ -153,7 +153,7 @@ def format_pull_request_event(event):
     except Exception as e:
         commit = "No commit found"
         print(f"An error occurred while getting the Commit: {e}")
-    
+    print(f"Formatted PullRequestEvent Message Type: {formatted_message}")
     return formatted_message, commit
 
 def format_push_event(event):
@@ -233,7 +233,9 @@ def get_github_events(event_type):
         #print(f"GitHub API Response: {response.status_code}, {response.text}")  # Log the raw response
         if response.status_code == 200:
             events = response.json()
+            print(f"Successfully fetched {events[1]} events")
             if events and events[0]['type'] == event_type:
+                print(f"Successfully fetched {events[0]} event")
                 return events[0]
             return []
         else:
