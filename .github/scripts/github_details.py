@@ -19,16 +19,6 @@ def get_llm():
 def ask(message):
 
         llm = get_llm()
-        #print(f"LLM: {llm}\n")  
-        system_template = '''
-        You are a helpful assistant that is a Git Expert. Your goal is to provide detailed descriptions over PushEvents and PullRequestEvents that are triggered on GitHub.
-        Do not say "Sure", "Certainly" or "Yes" as this will confuse the user.
-        '''
-        messages = [
-            SystemMessagePromptTemplate.from_template(system_template),
-            HumanMessagePromptTemplate.from_template("{message}"),
-        ]
-        #prompt = ChatPromptTemplate.from_messages(messages)
         template = '''
         You are a helpful assistant that is a Git Expert. Your goal is to provide detailed descriptions over PushEvents and PullRequestEvents that are triggered on GitHub.
         Provide a natural language response to the following GitHub Action that was taken place.
@@ -41,7 +31,7 @@ def ask(message):
                 template=template,
         )
         formatted = prompt.format(message=message)
-        print (f"Formatted message: {formatted}")
+        #print (f"Formatted message: {formatted}")
         print(f"Generating a natural language reponse to the GitHub Action\n")
         chain = LLMChain(
              llm = llm, 
@@ -90,8 +80,8 @@ def format_pull_request_event(event):
     action = event['payload']['action']
     pr_number = event['payload']['pull_request']['number']
     pr_changes = event['payload'].get('changes', {})
-    title_from = pr_changes.get('title', {}).get('from', 'N/A')
-    body_from = pr_changes.get('body', {}).get('from', 'N/A')
+    title_from = pr_changes.get('title', {}).get('from')
+    body_from = pr_changes.get('body', {}).get('from')
     pr_details = json.dumps(event['payload']['pull_request'], indent=4)
 
     formatted_message = (
@@ -100,7 +90,7 @@ def format_pull_request_event(event):
         f"Body Changed From: {body_from}\n"
         f"Pull Request Details: {pr_details}"
     )
-    print(f"Formatted PullRequestEvent Message Type: {type(formatted_message)}")
+    #print(f"Formatted PullRequestEvent Message Type: {type(formatted_message)}")
 
     return str(formatted_message)
 def format_push_event(event):
