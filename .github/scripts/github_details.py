@@ -16,16 +16,25 @@ def get_llm():
         return GooglePalm(temperature=0.0)
 
     
-def ask(message):
+def ask(message, event_type):
 
         llm = get_llm()
-        template = '''
-        You are a helpful assistant that is a Git Expert. Your goal is to provide detailed descriptions over PushEvents and PullRequestEvents that are triggered on GitHub.
-        Provide a natural language response to the following GitHub Action that was taken place.
-        Include details about the commit ID, the type of event, the actor, the repository name, commit messages, the date, and a link to the commit branch:
+        if event_type == 'PushEvent':
+            template = '''
+            You are a helpful assistant that is a Git Expert. Your goal is to provide detailed descriptions over PushEvents and PullRequestEvents that are triggered on GitHub.
+            Provide a natural language response to the following GitHub Action that was taken place.
+            Include details about the commit ID, the type of event, the actor, the repository name, commit messages, the date, and a link to the commit branch:
 
-        GitHub Action: {message}
-        '''
+            GitHub Action: {message}
+            '''
+        elif event_type == 'PullRequestEvent':
+            template = '''
+            You are a helpful assistant that is a Git Expert. Your goal is to provide detailed descriptions over PushEvents and PullRequestEvents that are triggered on GitHub.
+            Provide a natural language response to the following GitHub Action that was taken place.
+            Include details about the Pull Request Action, the Pull Request Number, the Title Changed From, the Body Changed From, and the Pull Request Details:
+
+            GitHub Action: {message}
+            '''
         prompt = PromptTemplate(
                 input_variables=["message"],
                 template=template,
@@ -37,7 +46,7 @@ def ask(message):
              llm = llm, 
              prompt = prompt
              )
-        response = chain.run(formatted)
+        response = chain.run(message)
         print(f"Natural language response: {response}\n")
         # runnable = prompt | llm | StrOutputParser()
         # for chunk in runnable.stream({"message": "{message}"}):
@@ -191,13 +200,13 @@ if __name__ == "__main__":
         print("Processing PushEvent")
         message = format_push_event(event)
         #print(f"PushEvent Message: {message}")
-        ai_message = ask(message)
+        ai_message = ask(message, event_type)
         #print(f"AI Message: {ai_message}")
         send_to_google_chat(google_chat_webhook_url, ai_message)
     elif event and event['type'] == 'PullRequestEvent':
         print("Processing PullRequestEvent")
         message = format_pull_request_event(event)
-        ai_message = ask(message)
+        ai_message = ask(message, event_type)
         send_to_google_chat(google_chat_webhook_url, ai_message)
     else:
             print("Error: Non-string elements found in events_messages")
