@@ -1,6 +1,5 @@
 import time
 import streamlit as st
-from modules.vectorstore import VectorStore
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain.prompts import (
@@ -14,6 +13,9 @@ import os
 from langchain.embeddings.cohere import CohereEmbeddings
 from dotenv import load_dotenv
 from langchain.chat_models import AzureChatOpenAI
+from langchain.embeddings.cohere import CohereEmbeddings
+from langchain.vectorstores import FAISS
+
 
 
 class LLMLibrary:
@@ -23,11 +25,12 @@ class LLMLibrary:
         load_dotenv(os.path.join(BASEDIR, '.env'))
         choere_api_key = os.getenv("COHERE_API_KEY")
         self.embedding_function = CohereEmbeddings(model="embed-multilingual-v2.0", cohere_api_key=choere_api_key)
-        self.vectorstore = VectorStore()
         os.environ["OPENAI_API_TYPE"] = os.getenv("OPENAI_API_TYPE")
         os.environ["OPENAI_API_VERSION"] = os.getenv("OPENAI_API_VERSION")
         os.environ["OPENAI_API_BASE"] = os.getenv("OPENAI_API_BASE")
-        os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")    
+        os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+        choere_api_key = os.getenv("COHERE_API_KEY")
+        self.embedding_function = CohereEmbeddings(model="embed-english-v3.0", cohere_api_key=choere_api_key)
 
     def get_llm(self):
         print(f"Loading LLM {st.session_state.llm}")
@@ -35,12 +38,19 @@ class LLMLibrary:
             return ChatGooglePalm(temperature=0.0)
         elif st.session_state.llm == "openai":
             return AzureChatOpenAI(deployment_name="gpt-4", model_name="gpt-4", temperature=0.0)
-    
+        
+    def faiss(self, doc_splits, blob_name):
+        print("Creating FAISS Index")
+        global vectorstore
+        vectorstore = FAISS.from_documents(
+            doc_splits, 
+            embedding=self.embedding_function
+        )
     def ask(self):
 
         llm = self.get_llm()
         print(f"LLM: {llm}\n")  
-        vectordb = self.vectorstore.get_vectordb()
+        vectordb = vectorstore
 
         system_template = '''
         You are a helpful assistant that is a DevOps Engineer. Your goal is to provide high quality Terraform code to users that are looking to deploy infrastructure on the cloud.

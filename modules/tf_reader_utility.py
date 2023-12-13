@@ -4,7 +4,7 @@ from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import google.auth
 from google.cloud import storage
-from modules.vectorstore import VectorStore
+from modules.llm_library import LLMLibrary
 from dotenv import load_dotenv
 import os
 import re
@@ -17,7 +17,7 @@ class TerraformReader():
         self.credentials, self.project = google.auth.default()
         # Create a list of all the blobs in the Storage Bucket
 
-        self.vectorstore = VectorStore()
+        self.llmlibrary = LLMLibrary()
     
     def get_tf_state(self, terraform_state_path):
         bucket_name = re.match(r"(?:gs://)?(.*?)/(.*)", terraform_state_path).group(1)
@@ -43,7 +43,7 @@ class TerraformReader():
             # Create a list of loaders
             loader = (GCSFileLoader(project_name=self.project, bucket=gcs_bucket, blob=terraform_state, loader_func=self.load_json))
             loaded_docs = loader.load()
-            print(f"Number of docs :  {len(loaded_docs)}\n")
+            print(f"Number of TF docs :  {len(loaded_docs)}\n")
             # Add document name and source to the metadata
             # Split the docs
             text_splitter = RecursiveCharacterTextSplitter(
@@ -56,7 +56,7 @@ class TerraformReader():
             doc_splits = text_splitter.split_documents(loaded_docs)
             for idx, split in enumerate(doc_splits):
                 split.metadata['chunk'] = idx
-            print(f"Number of Chuncks from PDF:  {len(doc_splits)}\n")
+            print(f"Number of Chuncks from Terraform State:  {len(doc_splits)}\n")
             self.embbed_docs(doc_splits, terraform_state)
         except Exception as e:
             print(f"An error occurred during document loading: {e} on file {terraform_state}")
@@ -67,11 +67,11 @@ class TerraformReader():
         try:
             if None not in (docs, blob_name):
                 #print(f"Split Text:  {docs}\n")
-                print(f"Number of Chunks from PDF:  {len(docs)}\n")
+                print(f"Number of Chunks from Terraform State:  {len(docs)}\n")
                 # Add the docs to the FAISS
                 print(f"Successfully loaded {blob_name}")
                 print(f"Vectorizing document {blob_name}")
-                self.vectorstore.faiss(docs, blob_name)
+                self.llmlibrary.faiss(docs, blob_name)
                 
         except Exception as e:
             print(f"An error occurred during document embedding: {e} on file {blob_name}")

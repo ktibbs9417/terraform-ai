@@ -3,7 +3,6 @@ import re
 import google.auth
 import streamlit as st
 from google.cloud import storage, aiplatform
-from modules.vectorstore import VectorStore
 from modules.tf_reader_utility import TerraformReader
 from modules.llm_library import LLMLibrary
 from dotenv import load_dotenv
@@ -19,7 +18,6 @@ class TF_ASSISTANT():
             load_dotenv()
             print(f"Initializing Google Auth and Vertex AI")
             st.session_state.terraformreader = TerraformReader()
-            st.session_state.vectorstore = VectorStore()
             st.session_state.llmlibrary = LLMLibrary()
             self.credentials, self.project = google.auth.default()
             aiplatform.init(project=self.project, location="us-central1")
