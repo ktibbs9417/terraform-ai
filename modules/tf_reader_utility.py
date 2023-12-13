@@ -3,11 +3,8 @@ from langchain.document_loaders import GCSFileLoader
 from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import google.auth
-import streamlit as st
 from google.cloud import storage
 from modules.vectorstore import VectorStore
-from langchain.document_loaders import TextLoader
-from langchain.text_splitter import SpacyTextSplitter
 from dotenv import load_dotenv
 import os
 import re

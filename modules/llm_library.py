@@ -54,11 +54,6 @@ class LLMLibrary:
             HumanMessagePromptTemplate.from_template("Provide Terraform to the following question: {question}:"),
         ]
         prompt = ChatPromptTemplate.from_messages(messages)
-
-        # generate_queries = (
-        #     prompt | llm | StrOutputParser() | (lambda x: x.split("\n"))
-        # )
-        # Create a retriever from the vector database
         retriever = vectordb.as_retriever(
                     search_type="similarity",
                     search_kwargs={
