@@ -45,10 +45,11 @@ class LLMLibrary:
             doc_splits, 
             embedding=self.embedding_function
         )
+        vectorstore.save_local("gemini-bug")
     def ask(self):
-        llm = self.get_llm()
+        llm = ChatGoogleGenerativeAI(model="gemini-pro",temperature=0.0)
         print(f"LLM: {llm}\n")
-        vectordb = vectorstore
+        vectordb = FAISS.load_local("gemini-bug", embeddings=self.embedding_function)
 
         system_template = '''
         You are a helpful assistant that is a DevOps Engineer. Your goal is to provide high quality Terraform code to users that are looking to deploy infrastructure on the cloud.
@@ -56,20 +57,20 @@ class LLMLibrary:
         Context:
         {context}
 
+        Provide Terraform to the following question: {question}:
+
         '''
         messages = [
-            HumanMessagePromptTemplate.from_template("Provide Terraform to the following question: {question}:"),
+            HumanMessagePromptTemplate.from_template(system_template),
             #AIMessagePromptTemplate.from_template(system_template),
         ]
-        prompt = ChatPromptTemplate.from_messages(
-            template=messages,
-            input_variables=["question"]
-            )
-
+        prompt = ChatPromptTemplate.from_messages(messages)
+        
+        print (f"Prompt: {prompt}\n")
         retriever = vectordb.as_retriever(
                     search_type="similarity",
                     search_kwargs={
-                        "k": 5,
+                        "k": 1,
                         "search_distance": 0.6,
                     },
             )
@@ -77,7 +78,7 @@ class LLMLibrary:
 
         memory = ConversationBufferMemory(memory_key="chat_history", output_key="answer", return_messages=True, max_token_limit=1024)
         print(f"Initiating chat conversation memory\n")
-        #print(f"Conversation Memory: {memory}\n")
+        print(f"Conversation Memory: {memory}\n")
         conversation_chain= ConversationalRetrievalChain.from_llm(
             llm,
             retriever=retriever,
@@ -87,5 +88,12 @@ class LLMLibrary:
             return_source_documents=True,
             verbose=True,
         )
-        #print(f"Conversation chain: {conversation_chain}\n")
+        print(f"Conversation chain: {conversation_chain}\n")
         return conversation_chain
+    
+if __name__ == "__main__":
+    llm_library = LLMLibrary()
+    question = "595132057377"
+    conversation = llm_library.ask()
+    response = conversation({'question': question})
+    print (response['chat_history'])
