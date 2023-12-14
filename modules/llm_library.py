@@ -61,7 +61,10 @@ class LLMLibrary:
             HumanMessagePromptTemplate.from_template("Provide Terraform to the following question: {question}:"),
             #AIMessagePromptTemplate.from_template(system_template),
         ]
-        prompt = ChatPromptTemplate.from_messages(messages)
+        prompt = ChatPromptTemplate.from_messages(
+            template=messages,
+            input_variables=["question"]
+            )
 
         retriever = vectordb.as_retriever(
                     search_type="similarity",
