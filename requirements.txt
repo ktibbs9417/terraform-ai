@@ -1,5 +1,5 @@
 google-cloud-storage
-langchain==0.0.346
+langchain==0.0.350
 pyhcl
 google-generativeai
 google-cloud-aiplatform
@@ -21,3 +21,4 @@ tfds-nightly
 tensorflow_hub==0.13.0
 jq
 openai
+langchain-google-genai
