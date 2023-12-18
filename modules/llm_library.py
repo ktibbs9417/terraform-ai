@@ -15,7 +15,10 @@ import os
 from dotenv import load_dotenv
 from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings.cohere import CohereEmbeddings
-from langchain.vectorstores import FAISS
+from langchain.vectorstores import DocArrayInMemorySearch
+from langchain.schema.runnable import RunnableMap
+from langchain.schema.output_parser import StrOutputParser
+
 
 
 
@@ -39,37 +42,33 @@ class LLMLibrary:
             return AzureChatOpenAI(deployment_name="gpt-4", model_name="gpt-4", temperature=0.0)
         
     def faiss(self, doc_splits, blob_name):
-        print("Creating FAISS Index")
+        print("Creating Index")
         global vectorstore
-        vectorstore = FAISS.from_documents(
+        vectorstore = DocArrayInMemorySearch.from_documents(
             doc_splits, 
             embedding=self.embedding_function
         )
     def ask(self):
         llm = self.get_llm()
         print(f"LLM: {llm}\n")
+        output_parser = StrOutputParser()
         vectordb = vectorstore
 
-        system_template = '''
-        You are a helpful assistant that is a DevOps Engineer. Your goal is to provide high quality Terraform code to users that are looking to deploy infrastructure on the cloud.
-
+        prompt = ChatPromptTemplate.from_template('''
+            You are a helpful assistant that is a DevOps Engineer. 
+            Your goal is to provide high quality Terraform code to users that are looking to deploy infrastructure on the cloud.
+            Don't use Markdown or HTML in your answers. Always start off your answer with a a gesture of kindness and a greeting.
         Context:
         {context}
 
+        Based on the context, provide a detailed terraform boilerplate and explain how it works and how to execute by using the following question: {question}
         '''
-        messages = [
-            HumanMessagePromptTemplate.from_template("Provide Terraform to the following question: {question}:"),
-            #AIMessagePromptTemplate.from_template(system_template),
-        ]
-        prompt = ChatPromptTemplate.from_messages(
-            template=messages,
-            input_variables=["question"]
-            )
+        )
 
         retriever = vectordb.as_retriever(
                     search_type="similarity",
                     search_kwargs={
-                        "k": 5,
+                        "k": 4,
                         "search_distance": 0.6,
                     },
             )
@@ -77,7 +76,7 @@ class LLMLibrary:
 
         memory = ConversationBufferMemory(memory_key="chat_history", output_key="answer", return_messages=True, max_token_limit=1024)
         print(f"Initiating chat conversation memory\n")
-        #print(f"Conversation Memory: {memory}\n")
+        print(f"Conversation Memory: {memory}\n")
         conversation_chain= ConversationalRetrievalChain.from_llm(
             llm,
             retriever=retriever,

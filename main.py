@@ -1,5 +1,6 @@
 import os
 import re
+from html import escape
 import google.auth
 import streamlit as st
 from google.cloud import storage, aiplatform
@@ -32,23 +33,22 @@ class TF_ASSISTANT():
         st.session_state.disabled = False
         st.rerun()
 
-
     def handle_userinput(self, question):
         if "conversation" not in st.session_state or st.session_state["conversation"] is None:
             st.session_state.conversation = st.session_state.llmlibrary.ask()
         response = st.session_state.conversation({'question': question})
-        print(f"Response: {response}")
+        #print(f"Response: {response}")
         st.session_state.chat_history = response['chat_history']
-        #print(f"Chat History:\n {st.session_state.chat_history}\n")
-        #print(f"Conversation:\n {st.session_state.conversation}\n")
 
         for i, message in enumerate(st.session_state.chat_history):
             if i % 2 == 0:
                 st.write(user_template.replace(
                     "{{MSG}}", message.content), unsafe_allow_html=True)
+                print(f"User Message: {message.content}")
             else:
                 st.write(bot_template.replace(
                     "{{MSG}}", message.content), unsafe_allow_html=True)
+                print(f"Bot Message: {message.content}")
         
     def disable_upload(self):
         st.session_state.disabled = True
