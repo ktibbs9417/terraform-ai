@@ -28,3 +28,6 @@ tensorflow_hub==0.13.0
 jq
 openai
 langchain-google-genai
+slack-sdk
+slack-bolt
+Flask

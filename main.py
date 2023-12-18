@@ -8,8 +8,6 @@ from modules.tf_reader_utility import TerraformReader
 from modules.llm_library import LLMLibrary
 from dotenv import load_dotenv
 from htmlTemplates import css, bot_template, user_template
-from langchain.memory import ConversationBufferMemory
-
 
 class TF_ASSISTANT():
     
