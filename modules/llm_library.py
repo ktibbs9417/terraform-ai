@@ -51,7 +51,6 @@ class LLMLibrary:
     def ask(self):
         llm = self.get_llm()
         print(f"LLM: {llm}\n")
-        output_parser = StrOutputParser()
         vectordb = vectorstore
 
         prompt = ChatPromptTemplate.from_template('''

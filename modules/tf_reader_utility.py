@@ -22,7 +22,7 @@ class TerraformReader():
     def get_tf_state(self, terraform_state_path):
         bucket_name = re.match(r"(?:gs://)?(.*?)/(.*)", terraform_state_path).group(1)
         terraform_state = re.findall(r"(?:gs://)?[^/]+/(.*\.tfstate)$", terraform_state_path)[0]
-        gcs_bucket = storage.Client().get_bucket(bucket_name)
+        gcs_bucket = storage.Client(project=self.project).get_bucket(bucket_name)
         blob = gcs_bucket.blob(terraform_state)
         blob.download_to_filename("tf_state.json")
         print (f"Bucket: {gcs_bucket}")

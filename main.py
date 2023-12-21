@@ -18,7 +18,8 @@ class TF_ASSISTANT():
             print(f"Initializing Google Auth and Vertex AI")
             st.session_state.terraformreader = TerraformReader()
             st.session_state.llmlibrary = LLMLibrary()
-            self.credentials, self.project = google.auth.default()
+            self.credentials = google.auth.default()
+            self.project = os.getenv("PROJECT_ID")
             aiplatform.init(project=self.project, location="us-central1")
             st.session_state.init = True
 
